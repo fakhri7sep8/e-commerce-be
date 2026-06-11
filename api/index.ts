@@ -27,8 +27,6 @@ async function createServer() {
     credentials: true,
   });
 
-  app.setGlobalPrefix('api');
-
   await app.init();
 }
 

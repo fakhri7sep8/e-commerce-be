@@ -17,27 +17,15 @@ import { AppService } from './app.service';
       isGlobal: true,
       envFilePath: '.env',
     }),
-
-    // TypeORM untuk koneksi MySQL
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: getTypeOrmConfig,
     }),
-
-    // Module Autentikasi (register, login, logout, profile)
     AuthModule,
-
-    // Module Cart (keranjang belanja)
     CartModule,
-
-    // Module Orders (checkout & riwayat order)
     OrdersModule,
-
-    // Module Products (CRUD produk)
     ProductsModule,
-
-    // Module Categories (CRUD kategori)
     CategoriesModule,
   ],
   controllers: [AppController],
