@@ -5,9 +5,9 @@ import { AppModule } from './app.module';
 import { configure as serverlessExpress } from '@vendia/serverless-express';
 import { Callback, Context, Handler } from 'aws-lambda';
 
-let server: Handler;
+let cachedServer: Handler;
 
-async function bootstrap() {
+async function bootstrap(): Promise<Handler> {
   const app = await NestFactory.create(AppModule);
 
   // 1. Pengaturan CORS milikmu
@@ -31,27 +31,29 @@ async function bootstrap() {
     }),
   );
 
-  // JIKA BERJALAN DI LOKAL (bukan serverless Vercel)
-  if (!process.env.LAMBDA_TASK_ROOT && !process.env.VERCEL) {
-    const port = process.env.PORT || 3001;
-    await app.listen(port);
-    console.log(`🚀 Aplikasi LOKAL berjalan di http://localhost:${port}`);
-    return;
+  // JIKA BERJALAN DI VERCEL / SERVERLESS
+  if (process.env.LAMBDA_TASK_ROOT || process.env.VERCEL) {
+    await app.init();
+    const expressApp = app.getHttpAdapter().getInstance();
+    return serverlessExpress({ app: expressApp });
   }
 
-  // JIKA BERJALAN DI VERCEL / SERVERLESS
-  await app.init();
-  const expressApp = app.getHttpAdapter().getInstance();
-  return serverlessExpress({ app: expressApp });
+  // JIKA BERJALAN DI LOKAL
+  const port = process.env.PORT || 3001;
+  await app.listen(port);
+  console.log(`🚀 Aplikasi LOKAL berjalan di http://localhost:${port}`);
+  
+  // Return dummy handler aja buat lokal supaya memuaskan tipe data TS
+  return (() => {}) as any;
 }
 
 // Export handler wajib untuk Vercel / Serverless
 export const handler: Handler = async (event: any, context: Context, callback: Callback) => {
-  server = server ?? (await bootstrap());
-  return server(event, context, callback);
+  cachedServer = cachedServer ?? (await bootstrap());
+  return cachedServer(event, context, callback);
 };
 
-// Jalankan bootstrap otomatis jika di lokal
+// Jalankan bootstrap otomatis HANYA jika di lokal
 if (!process.env.LAMBDA_TASK_ROOT && !process.env.VERCEL) {
   bootstrap();
 }

@@ -87,9 +87,10 @@ export class AuthService {
     // Set cookie httpOnly
     res.cookie('access_token', token, {
       httpOnly: true,
-      secure: false, // true di production (HTTPS)
-      sameSite: 'lax',
+      secure: true, // WAJIB TRUE! Karena Vercel mewajibkan HTTPS
+      sameSite: 'none', // WAJIB 'none'! Supaya browser mau nerima cookie lintas domain (FE Vercel -> BE)
       maxAge: 15 * 60 * 1000, // 15 menit
+      path: '/', // Memastikan cookie bisa diakses di semua endpoint
     });
 
     const { password, ...result } = user;

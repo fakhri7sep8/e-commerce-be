@@ -5,11 +5,14 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import express from 'express';
 
 const server = express();
+let isServerCreated = false; // Penanda apakah server sudah pernah dibuat
 
-async function createServer() {
+async function bootstrapServer() {
+  if (isServerCreated) return; // Jika sudah dibuat, jangan buat lagi!
+
   const app = await NestFactory.create(AppModule, new ExpressAdapter(server));
 
-  // 1. Global Validation Pipe (Biar DTO lo jalan)
+  // 1. Global Validation Pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -28,9 +31,13 @@ async function createServer() {
   });
 
   await app.init();
+  isServerCreated = true; // Set jadi true agar request berikutnya gak bikin ulang
 }
 
 export default async (req: any, res: any) => {
-  await createServer();
+  // Tunggu sampai server benar-benar selesai di-bootstrap sekali
+  await bootstrapServer();
+  
+  // Baru oper request-nya ke express
   server(req, res);
 };
