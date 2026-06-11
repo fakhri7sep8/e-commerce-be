@@ -12,7 +12,7 @@ export const getTypeOrmConfig = (configService: ConfigService): TypeOrmModuleOpt
     password: configService.get<string>('DB_PASSWORD', 'secret'),
     database: configService.get<string>('DB_DATABASE', 'ecommerce_db'),
     entities: [__dirname + '/../**/*.entity.{ts,js}'],
-    synchronize: !isProduction, 
+    synchronize: true, 
 
     // PERBAIKAN: Menggunakan opsi SSL yang lebih fleksibel
     ssl: {
