@@ -94,7 +94,7 @@ export class AuthService {
     });
 
     const { password, ...result } = user;
-    return result;
+    return { ...result, access_token: token }; // ← tambah in
   }
 
   /**
